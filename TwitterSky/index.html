@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>TwitterSky</title>
+<style type="text/css">
+    .tweetDiv {  
+        top: -400px;  
+        width: 400px;
+        position: absolute;
+        font-family: Arial;
+        font-size: 16px;
+        background-color: white;
+    }  
+
+</style>
+</head>
+    <body>
+        <script src="Scripts/jquery-1.9.1.min.js"></script>
+        <script src="Scripts/jquery-ui-1.9.2.min.js"></script>
+        <link href="Content/themes/base/jquery-ui.css" rel="stylesheet" />
+
+        <script src="Scripts/jquery.signalR-1.0.1.min.js"></script>
+        <script src="signalr/hubs"></script>
+
+        <script type="text/javascript">
+            var counter = 0;
+            var twittersky = null;
+
+            $(function () {
+                // Declare a proxy to reference the hub. 
+
+                twittersky = $.connection.twitterSkyListener;
+                
+                $.connection.hub.logging = true;
+
+                twittersky.client.broadcastTweet = function (tweet) {
+                    //showDialog("<img src='" + tweet.user.profile_image_url + "'>" + tweet.text);
+                    showDiv(tweet);
+                };
+
+                // Start the connection.
+                $.connection.hub.start().done(function () {
+                    twittersky.server.startCaptureStreaming("windows");
+                });
+            });
+
+            //Shows a dialog with random position and jquery ui
+            //function showDialog(message) {
+            //    counter++;
+            //    x = Math.floor(Math.random() * $(document).width());
+            //    y = Math.floor(Math.random() * $(document).height());
+            //    $('<div id="dialog" title="'+ counter + '">' + message + '</div>').dialog(
+            //        {
+            //            modal: false,
+            //            position: [x,y],
+            //            buttons: {
+            //                Ok: function () {
+            //                    $(this).dialog("close");
+            //                }
+            //            }
+            //        }
+            //    );
+            //}
+            
+            function showDiv(tweet) {
+                counter++;
+                x = Math.floor(Math.random() * ($(document).width() - 400));
+                y = Math.floor(Math.random() * ($(document).height() - 140));
+
+                var tweetcontent = "<table><tr><td><img src='" + tweet.user.profile_image_url + "'></td><td><b>" + tweet.user.name + ":</b> " + tweet.text + "</td></tr></table>";
+                var div = "<div class='tweetDiv' id='tweet" + counter + "'>" + tweetcontent + "</div>";
+
+                $("body").append(div);
+
+                $('#tweet' + counter).animate({ left: x, top: (y + 40)}, 2000);
+            }
+            
+            $(window).unload(function () {
+                twittersky.server.stopCaptureStreaming();
+            });
+
+        </script>
+        
+        <div style="z-index: 100">
+            <input id="StartButton" type="button" onclick="twittersky.server.startCaptureStreaming($('#Keyword').val());" value="Start" />
+            <input id="Keyword" type="text" value="Windows"/>
+            <input id="StopButton" type="button" onclick="twittersky.server.stopCaptureStreaming();" value="Stop" />
+            <input id="ClearButton" value="Clear" type="button" onclick="$('.tweetDiv').remove()"/>
+        </div>
+    </body>
+</html>

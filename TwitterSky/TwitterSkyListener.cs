@@ -35,6 +35,7 @@ namespace TwitterSky
 
         public void StopCaptureStreaming()
         {
+            _stream.EndStream();
             _stream.Dispose();
         }
 
